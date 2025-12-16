@@ -346,86 +346,90 @@
       height: 20px;
     }
 
-    /* Dark mode support */
+    /* Dark mode support - only when no explicit light class */
     @media (prefers-color-scheme: dark) {
-      .ap-widget {
+      body:not(.light) .ap-widget {
         background: #16181c;
         border-color: #2f3336;
       }
 
-      .ap-name, .ap-post-name, .ap-post-content {
+      body:not(.light) .ap-cover {
+        background-color: #2f3336;
+      }
+
+      body:not(.light) .ap-name, body:not(.light) .ap-post-name, body:not(.light) .ap-post-content {
         color: #e7e9ea;
       }
 
-      .ap-handle, .ap-post-handle-date {
+      body:not(.light) .ap-handle, body:not(.light) .ap-post-handle-date {
         color: #71767b;
       }
 
-      .ap-bio {
+      body:not(.light) .ap-bio {
         color: #e7e9ea;
       }
 
-      .ap-posts, .ap-post {
+      body:not(.light) .ap-posts, body:not(.light) .ap-post {
         border-color: #2f3336;
       }
 
-      .ap-follow-btn {
+      body:not(.light) .ap-follow-btn {
         background: #eff3f4;
         color: #0f1419;
       }
 
-      .ap-follow-btn:hover {
+      body:not(.light) .ap-follow-btn:hover {
         background: #d7dbdc;
       }
 
-      .ap-avatar {
+      body:not(.light) .ap-avatar {
         border-color: #16181c;
       }
 
-      .ap-dialog {
+      body:not(.light) .ap-dialog {
         background: #16181c;
       }
 
-      .ap-dialog-header {
+      body:not(.light) .ap-dialog-header {
         border-color: #2f3336;
       }
 
-      .ap-dialog-title {
+      body:not(.light) .ap-dialog-title {
         color: #e7e9ea;
       }
 
-      .ap-dialog-close {
+      body:not(.light) .ap-dialog-close {
         color: #71767b;
       }
 
-      .ap-dialog-close:hover {
+      body:not(.light) .ap-dialog-close:hover {
         color: #e7e9ea;
       }
 
-      .ap-dialog-option {
+      body:not(.light) .ap-dialog-option {
         color: #e7e9ea;
       }
 
-      .ap-dialog-option:hover {
+      body:not(.light) .ap-dialog-option:hover {
         background: #1d1f23;
       }
 
-      .ap-dialog-option-handle {
+      body:not(.light) .ap-dialog-option-handle {
         color: #71767b;
       }
 
-      .ap-dialog-option-arrow {
+      body:not(.light) .ap-dialog-option-arrow {
         color: #71767b;
       }
     }
 
     /* Dark mode via class */
-    body.dark {
-      background: #000;
-    }
-
     body.dark .ap-widget {
       background: #16181c;
+    }
+
+    body.dark .ap-cover {
+      background-color: #2f3336;
     }
 
     body.dark .ap-name, body.dark .ap-post-name, body.dark .ap-post-content {
@@ -640,9 +644,11 @@ document.addEventListener('keydown', function(e) {
     blueskyUrl: blueskyUrl
   };
 
-  // Apply color theme
+  // Apply color theme (explicit param overrides system preference)
   if (color === 'dark') {
     document.body.classList.add('dark');
+  } else {
+    document.body.classList.add('light');
   }
 
   // Update follow dialog links
