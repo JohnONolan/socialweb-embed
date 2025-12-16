@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ActivityPub Profile</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    .ap-widget {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      max-width: 600px;
+      margin: 5px auto;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      outline: 5px solid rgba(0, 0, 0, 0.1);
+      outline-offset: 0;
+    }
+
+    .ap-cover {
+      height: 180px;
+      background-size: cover;
+      background-position: center;
+      background-color: #f0f0f0;
+    }
+
+    .ap-header {
+      padding: 0 20px 20px;
+      position: relative;
+    }
+
+    .ap-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      background: #e1e1e1;
+      margin-top: -45px;
+      object-fit: cover;
+    }
+
+    .ap-follow-btn {
+      position: absolute;
+      right: 20px;
+      top: 15px;
+      background: #000;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      font-family: inherit;
+    }
+
+    .ap-follow-btn:hover {
+      background: #333;
+    }
+
+    .ap-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 12px;
+      color: #000;
+    }
+
+    .ap-handle {
+      font-size: 14px;
+      color: #666;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .ap-handle button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px;
+      opacity: 0.5;
+      display: flex;
+      align-items: center;
+      color: inherit;
+    }
+
+    .ap-handle button:hover {
+      opacity: 1;
+    }
+
+    .ap-handle button svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .ap-bio {
+      font-size: 15px;
+      color: #333;
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+
+    .ap-posts {
+      border-top: 1px solid #e1e1e1;
+    }
+
+    .ap-post {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e1e1e1;
+    }
+
+    .ap-post:last-child {
+      border-bottom: none;
+    }
+
+    .ap-post-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .ap-post-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .ap-post-meta {
+      flex: 1;
+    }
+
+    .ap-post-name {
+      font-weight: 600;
+      font-size: 15px;
+      color: #000;
+    }
+
+    .ap-post-handle-date {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .ap-post-content {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #000;
+      white-space: pre-wrap;
+    }
+
+    .ap-post-content a {
+      color: #1d9bf0;
+      text-decoration: none;
+    }
+
+    .ap-post-content a:hover {
+      text-decoration: underline;
+    }
+
+    .ap-post-images {
+      margin-top: 12px;
+      display: grid;
+      gap: 4px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .ap-post-images.single {
+      grid-template-columns: 1fr;
+    }
+
+    .ap-post-images.multiple {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .ap-post-images img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .ap-post-images.single img {
+      height: auto;
+      max-height: 400px;
+    }
+
+    .ap-loading {
+      padding: 40px;
+      text-align: center;
+      color: #666;
+    }
+
+    .ap-error {
+      padding: 40px;
+      text-align: center;
+      color: #c00;
+    }
+
+    /* Follow Dialog */
+    .ap-dialog-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      justify-content: center;
+      padding-top: 120px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    }
+
+    .ap-dialog-overlay.open {
+      display: flex;
+    }
+
+    .ap-dialog {
+      background: #fff;
+      border-radius: 16px;
+      width: 320px;
+      max-width: 90vw;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      height: fit-content;
+    }
+
+    .ap-dialog-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e1e1e1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ap-dialog-title {
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .ap-dialog-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+      padding: 0;
+      line-height: 1;
+      font-family: inherit;
+    }
+
+    .ap-dialog-close:hover {
+      color: #000;
+    }
+
+    .ap-dialog-body {
+      padding: 12px;
+    }
+
+    .ap-dialog-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #000;
+      border: none;
+      background: none;
+      width: 100%;
+      cursor: pointer;
+      font-size: 15px;
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .ap-dialog-option:hover {
+      background: #f5f5f5;
+    }
+
+    .ap-dialog-option-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .ap-dialog-option-icon.x {
+      background: #000;
+      color: #fff;
+    }
+
+    .ap-dialog-option-icon.bluesky {
+      background: #0085ff;
+      color: #fff;
+    }
+
+    .ap-dialog-option-icon.socialweb {
+      background: linear-gradient(135deg, #6364ff, #563acc);
+      color: #fff;
+    }
+
+    .ap-dialog-option-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .ap-dialog-option-text {
+      flex: 1;
+    }
+
+    .ap-dialog-option-name {
+      font-weight: 600;
+    }
+
+    .ap-dialog-option-handle {
+      font-size: 13px;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    .ap-dialog-option-arrow {
+      color: #999;
+      display: flex;
+      align-items: center;
+    }
+
+    .ap-dialog-option-arrow svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      .ap-widget {
+        background: #16181c;
+        border-color: #2f3336;
+      }
+
+      .ap-name, .ap-post-name, .ap-post-content {
+        color: #e7e9ea;
+      }
+
+      .ap-handle, .ap-post-handle-date {
+        color: #71767b;
+      }
+
+      .ap-bio {
+        color: #e7e9ea;
+      }
+
+      .ap-posts, .ap-post {
+        border-color: #2f3336;
+      }
+
+      .ap-follow-btn {
+        background: #eff3f4;
+        color: #0f1419;
+      }
+
+      .ap-follow-btn:hover {
+        background: #d7dbdc;
+      }
+
+      .ap-avatar {
+        border-color: #16181c;
+      }
+
+      .ap-dialog {
+        background: #16181c;
+      }
+
+      .ap-dialog-header {
+        border-color: #2f3336;
+      }
+
+      .ap-dialog-title {
+        color: #e7e9ea;
+      }
+
+      .ap-dialog-close {
+        color: #71767b;
+      }
+
+      .ap-dialog-close:hover {
+        color: #e7e9ea;
+      }
+
+      .ap-dialog-option {
+        color: #e7e9ea;
+      }
+
+      .ap-dialog-option:hover {
+        background: #1d1f23;
+      }
+
+      .ap-dialog-option-handle {
+        color: #71767b;
+      }
+
+      .ap-dialog-option-arrow {
+        color: #71767b;
+      }
+    }
+
+    /* Dark mode via class */
+    body.dark {
+      background: #000;
+    }
+
+    body.dark .ap-widget {
+      background: #16181c;
+    }
+
+    body.dark .ap-name, body.dark .ap-post-name, body.dark .ap-post-content {
+      color: #e7e9ea;
+    }
+
+    body.dark .ap-handle, body.dark .ap-post-handle-date {
+      color: #71767b;
+    }
+
+    body.dark .ap-bio {
+      color: #e7e9ea;
+    }
+
+    body.dark .ap-posts, body.dark .ap-post {
+      border-color: #2f3336;
+    }
+
+    body.dark .ap-follow-btn {
+      background: #eff3f4;
+      color: #0f1419;
+    }
+
+    body.dark .ap-follow-btn:hover {
+      background: #d7dbdc;
+    }
+
+    body.dark .ap-avatar {
+      border-color: #16181c;
+    }
+
+    body.dark .ap-dialog {
+      background: #16181c;
+    }
+
+    body.dark .ap-dialog-header {
+      border-color: #2f3336;
+    }
+
+    body.dark .ap-dialog-title {
+      color: #e7e9ea;
+    }
+
+    body.dark .ap-dialog-close {
+      color: #71767b;
+    }
+
+    body.dark .ap-dialog-close:hover {
+      color: #e7e9ea;
+    }
+
+    body.dark .ap-dialog-option {
+      color: #e7e9ea;
+    }
+
+    body.dark .ap-dialog-option:hover {
+      background: #1d1f23;
+    }
+
+    body.dark .ap-dialog-option-handle {
+      color: #71767b;
+    }
+
+    body.dark .ap-dialog-option-arrow {
+      color: #71767b;
+    }
+  </style>
+</head>
+<body>
+
+<div id="ap-widget" class="ap-widget">
+  <div class="ap-loading">Loading...</div>
+</div>
+
+<!-- Follow Dialog -->
+<div id="ap-follow-dialog" class="ap-dialog-overlay">
+  <div class="ap-dialog">
+    <div class="ap-dialog-header">
+      <span class="ap-dialog-title">Follow Alcove</span>
+      <button class="ap-dialog-close" onclick="closeFollowDialog()">&times;</button>
+    </div>
+    <div class="ap-dialog-body">
+      <a href="https://x.com/alcovenews" target="_blank" rel="noopener" class="ap-dialog-option">
+        <div class="ap-dialog-option-icon x">𝕏</div>
+        <div class="ap-dialog-option-text">
+          <div class="ap-dialog-option-name">Twitter</div>
+          <div class="ap-dialog-option-handle">@AlcoveNews</div>
+        </div>
+        <span class="ap-dialog-option-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
+        </span>
+      </a>
+      <a href="https://bsky.app/profile/alcove.blog.alcove.news.ap.brid.gy" target="_blank" rel="noopener" class="ap-dialog-option">
+        <div class="ap-dialog-option-icon bluesky"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 600 530"><path d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z" fill="#fff"/></svg></div>
+        <div class="ap-dialog-option-text">
+          <div class="ap-dialog-option-name">Bluesky</div>
+          <div class="ap-dialog-option-handle">@alcove.blog.alcove.news</div>
+        </div>
+        <span class="ap-dialog-option-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+          </svg>
+        </span>
+      </a>
+      <button class="ap-dialog-option" onclick="copySocialWebHandle(this)">
+        <div class="ap-dialog-option-icon socialweb">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.6349 20.3723C3.80192 20.5393 4.00019 20.6718 4.21841 20.7622C4.43663 20.8525 4.67052 20.8991 4.90672 20.8991C5.14291 20.8991 5.3768 20.8525 5.59502 20.7622C5.81324 20.6718 6.01152 20.5393 6.17853 20.3723C6.34555 20.2052 6.47804 20.007 6.56843 19.7888C6.65882 19.5705 6.70534 19.3366 6.70534 19.1004C6.70534 18.8643 6.65882 18.6304 6.56843 18.4121C6.47804 18.1939 6.34555 17.9956 6.17853 17.8286C5.84123 17.4913 5.38374 17.3018 4.90672 17.3018C4.42969 17.3018 3.9722 17.4913 3.6349 17.8286C3.29759 18.1659 3.10809 18.6234 3.10809 19.1004C3.10809 19.5775 3.29759 20.035 3.6349 20.3723ZM17.7153 6.17951C17.8823 6.34653 18.0806 6.47901 18.2988 6.5694C18.517 6.65979 18.7509 6.70632 18.9871 6.70632C19.2233 6.70632 19.4572 6.65979 19.6754 6.5694C19.8936 6.47901 20.0919 6.34653 20.2589 6.17951C20.4259 6.01249 20.5584 5.81421 20.6488 5.596C20.7392 5.37778 20.7857 5.14389 20.7857 4.90769C20.7857 4.67149 20.7392 4.43761 20.6488 4.21939C20.5584 4.00117 20.4259 3.80289 20.2589 3.63587C19.9216 3.29857 19.4641 3.10907 18.9871 3.10907C18.5101 3.10907 18.0526 3.29857 17.7153 3.63587C17.378 3.97318 17.1885 4.43067 17.1885 4.90769C17.1885 5.38472 17.378 5.8422 17.7153 6.17951ZM7.50655 12.0023C7.50655 13.1946 7.98019 14.3381 8.82329 15.1812C9.66639 16.0243 10.8099 16.4979 12.0022 16.4979C13.1945 16.4979 14.338 16.0243 15.1811 15.1812C16.0242 14.3381 16.4978 13.1946 16.4978 12.0023C16.4978 10.81 16.0242 9.66647 15.1811 8.82337C14.338 7.98027 13.1945 7.50663 12.0022 7.50663C10.8099 7.50663 9.66639 7.98027 8.82329 8.82337C7.98019 9.66647 7.50655 10.81 7.50655 12.0023Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M8.79319 21.5246C10.5669 22.1224 12.4724 22.2127 14.2947 21.7854C16.1171 21.3581 17.7838 20.4302 19.1069 19.1062C20.4302 17.7827 21.3577 16.116 21.7848 14.2937C22.2119 12.4715 22.1217 10.5662 21.5243 8.79251M2.47582 15.2081C1.87829 13.4342 1.78805 11.5287 2.21527 9.70622C2.64249 7.88378 3.57019 6.21687 4.89383 4.89332C6.21747 3.56977 7.88445 2.64219 9.70692 2.21511C11.5294 1.78802 13.4349 1.87839 15.2088 2.47605" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </div>
+        <div class="ap-dialog-option-text">
+          <div class="ap-dialog-option-name">SocialWeb</div>
+          <div class="ap-dialog-option-handle" id="socialweb-handle" data-handle="@index@blog.alcove.news">@index@blog.alcove.news</div>
+        </div>
+        <span class="ap-dialog-option-arrow" id="socialweb-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+          </svg>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Heroicon SVGs
+const ICON_DUPLICATE = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+</svg>`;
+
+const ICON_CHECK = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+</svg>`;
+
+// Follow Dialog Functions
+function openFollowDialog() {
+  document.getElementById('ap-follow-dialog').classList.add('open');
+}
+
+function closeFollowDialog() {
+  document.getElementById('ap-follow-dialog').classList.remove('open');
+  resetSocialWebButton();
+}
+
+function resetSocialWebButton() {
+  const handleEl = document.getElementById('socialweb-handle');
+  handleEl.textContent = handleEl.dataset.handle;
+  document.getElementById('socialweb-arrow').innerHTML = ICON_DUPLICATE;
+}
+
+function copySocialWebHandle(button) {
+  const handleEl = document.getElementById('socialweb-handle');
+  const handle = handleEl.dataset.handle;
+  navigator.clipboard.writeText(handle).then(() => {
+    handleEl.textContent = 'Handle copied!';
+    document.getElementById('socialweb-arrow').innerHTML = ICON_CHECK;
+
+    // Revert after 2 seconds
+    setTimeout(resetSocialWebButton, 2000);
+  });
+}
+
+function copyProfileHandle(button, handle) {
+  navigator.clipboard.writeText(handle).then(() => {
+    button.innerHTML = ICON_CHECK;
+    button.style.color = '#22c55e';
+
+    // Revert after 2 seconds
+    setTimeout(() => {
+      button.innerHTML = ICON_DUPLICATE;
+      button.style.color = '';
+    }, 2000);
+  });
+}
+
+// Close dialog when clicking overlay
+document.getElementById('ap-follow-dialog').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeFollowDialog();
+  }
+});
+
+// Close dialog on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeFollowDialog();
+  }
+});
+
+(function() {
+  // ============================================
+  // URL PARAMETERS
+  // ============================================
+  const params = new URLSearchParams(window.location.search);
+  const site = params.get('site') || 'blog.alcove.news';
+  const color = params.get('color') || 'light';
+  const twitterUrl = params.get('twitter') || '';
+  const blueskyUrl = params.get('bluesky') || '';
+
+  // ============================================
+  // CONFIGURATION
+  // ============================================
+  const CONFIG = {
+    actorUrl: `https://${site}/.ghost/activitypub/users/index`,
+    outboxUrl: `https://${site}/.ghost/activitypub/outbox/index`,
+    maxPosts: 5,
+    cacheDuration: 5,
+    containerId: 'ap-widget',
+    site: site,
+    color: color,
+    twitterUrl: twitterUrl,
+    blueskyUrl: blueskyUrl
+  };
+
+  // Apply color theme
+  if (color === 'dark') {
+    document.body.classList.add('dark');
+  }
+
+  // Update follow dialog links
+  const twitterLink = document.querySelector('.ap-dialog-option[href*="x.com"]');
+  const blueskyLink = document.querySelector('.ap-dialog-option[href*="bsky.app"]');
+
+  if (twitterLink) {
+    if (twitterUrl) {
+      twitterLink.href = twitterUrl;
+    } else {
+      twitterLink.style.display = 'none';
+    }
+  }
+
+  if (blueskyLink) {
+    if (blueskyUrl) {
+      blueskyLink.href = blueskyUrl;
+    } else {
+      blueskyLink.style.display = 'none';
+    }
+  }
+
+  // Update SocialWeb handle
+  const socialwebHandle = `@index@${site}`;
+  const socialwebHandleEl = document.getElementById('socialweb-handle');
+  if (socialwebHandleEl) {
+    socialwebHandleEl.textContent = socialwebHandle;
+    socialwebHandleEl.dataset.handle = socialwebHandle;
+  }
+
+  // Heroicon for copy button (document-duplicate)
+  const ICON_DUPLICATE_SMALL = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+  </svg>`;
+
+  // ============================================
+  // CACHING
+  // ============================================
+  const CACHE_KEY = 'ap_widget_cache_' + CONFIG.actorUrl;
+
+  function getCache() {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (!cached) return null;
+      
+      const data = JSON.parse(cached);
+      const now = Date.now();
+      const age = (now - data.timestamp) / 1000 / 60; // age in minutes
+      
+      if (age > CONFIG.cacheDuration) {
+        localStorage.removeItem(CACHE_KEY);
+        return null;
+      }
+      
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setCache(actor, posts) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        timestamp: Date.now(),
+        actor: actor,
+        posts: posts
+      }));
+    } catch (e) {
+      // localStorage might be full or disabled
+    }
+  }
+
+  // ============================================
+  // DATA FETCHING
+  // ============================================
+  async function fetchActor() {
+    const response = await fetch(CONFIG.actorUrl, {
+      headers: { 'Accept': 'application/activity+json, application/json' }
+    });
+    if (!response.ok) throw new Error('Failed to fetch actor');
+    return response.json();
+  }
+
+  async function fetchPosts() {
+    // First get the outbox
+    const outboxResponse = await fetch(CONFIG.outboxUrl, {
+      headers: { 'Accept': 'application/activity+json, application/json' }
+    });
+    if (!outboxResponse.ok) throw new Error('Failed to fetch outbox');
+    const outbox = await outboxResponse.json();
+
+    // Get the first page
+    const firstPageUrl = outbox.first || CONFIG.outboxUrl;
+    const pageResponse = await fetch(firstPageUrl, {
+      headers: { 'Accept': 'application/activity+json, application/json' }
+    });
+    if (!pageResponse.ok) throw new Error('Failed to fetch posts');
+    const page = await pageResponse.json();
+
+    const items = page.orderedItems || [];
+    const posts = [];
+
+    for (const item of items) {
+      // Only Create activities (skip boosts/Announce)
+      if (item.type !== 'Create') continue;
+      
+      const object = item.object;
+      if (!object) continue;
+      
+      // Skip replies
+      if (object.inReplyTo) continue;
+      
+      // Only Notes and Articles
+      if (object.type !== 'Note' && object.type !== 'Article') continue;
+
+      // Extract images
+      const images = [];
+      const attachments = object.attachment || object.image || [];
+      const attachmentArray = Array.isArray(attachments) ? attachments : [attachments];
+      
+      for (const att of attachmentArray) {
+        if (!att) continue;
+        const mediaType = att.mediaType || att.type || '';
+        const attType = att.type || '';
+        
+        if (mediaType.startsWith('image/') || attType === 'Image') {
+          const imageUrl = att.url || att.href;
+          if (imageUrl && images.length < 4) {
+            images.push(imageUrl);
+          }
+        }
+      }
+
+      posts.push({
+        id: object.id,
+        content: object.content || '',
+        published: object.published,
+        url: object.url || object.id,
+        images: images
+      });
+
+      if (posts.length >= CONFIG.maxPosts) break;
+    }
+
+    return posts;
+  }
+
+  // ============================================
+  // RENDERING
+  // ============================================
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      if (diffHours === 0) {
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        return diffMins <= 1 ? 'just now' : `${diffMins}m`;
+      }
+      return `${diffHours}h`;
+    } else if (diffDays < 7) {
+      return `${diffDays}d`;
+    } else {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[date.getMonth()]} ${date.getDate()}`;
+    }
+  }
+
+  function getHostname(actorUrl) {
+    try {
+      const url = new URL(actorUrl);
+      return url.hostname;
+    } catch {
+      return '';
+    }
+  }
+
+  function stripHtml(html) {
+    return html
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>\s*<p>/gi, '\n\n')
+      .replace(/<[^>]*>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&nbsp;/g, ' ')
+      .trim();
+  }
+
+  function linkifyContent(text) {
+    // Convert URLs to links
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  }
+
+  function render(actor, posts) {
+    const container = document.getElementById(CONFIG.containerId);
+    const username = actor.preferredUsername || 'index';
+    const hostname = getHostname(actor.id || CONFIG.actorUrl);
+    const handle = `@${username}@${hostname}`;
+    const name = actor.name || actor.preferredUsername || 'Unknown';
+    const bio = actor.summary ? stripHtml(actor.summary) : '';
+    const avatar = actor.icon?.url || actor.icon || '';
+    const cover = actor.image?.url || actor.image || '';
+
+    let html = '';
+
+    // Cover image
+    if (cover) {
+      html += `<div class="ap-cover" style="background-image: url('${cover}')"></div>`;
+    } else {
+      html += `<div class="ap-cover"></div>`;
+    }
+
+    // Header
+    html += `<div class="ap-header">`;
+    if (avatar) {
+      html += `<img class="ap-avatar" src="${avatar}" alt="${name}">`;
+    } else {
+      html += `<div class="ap-avatar"></div>`;
+    }
+    
+    html += `<button class="ap-follow-btn" onclick="openFollowDialog()">Follow</button>`;
+    
+    html += `<div class="ap-name">${name}</div>`;
+    html += `<div class="ap-handle">${handle} <button onclick="copyProfileHandle(this, '${handle}')" title="Copy handle">${ICON_DUPLICATE_SMALL}</button></div>`;
+    
+    if (bio) {
+      html += `<div class="ap-bio">${bio}</div>`;
+    }
+    html += `</div>`;
+
+    // Posts
+    html += `<div class="ap-posts">`;
+    
+    for (const post of posts) {
+      const content = stripHtml(post.content);
+      const linkedContent = linkifyContent(content);
+      const dateStr = formatDate(post.published);
+
+      html += `<div class="ap-post">`;
+      html += `<div class="ap-post-header">`;
+      if (avatar) {
+        html += `<img class="ap-post-avatar" src="${avatar}" alt="${name}">`;
+      }
+      html += `<div class="ap-post-meta">`;
+      html += `<div class="ap-post-name">${name}</div>`;
+      html += `<div class="ap-post-handle-date">${handle} · ${dateStr}</div>`;
+      html += `</div>`;
+      html += `</div>`;
+      
+      html += `<div class="ap-post-content">${linkedContent}</div>`;
+
+      if (post.images.length > 0) {
+        const imageClass = post.images.length === 1 ? 'single' : 'multiple';
+        html += `<div class="ap-post-images ${imageClass}">`;
+        for (const img of post.images) {
+          html += `<img src="${img}" alt="" loading="lazy">`;
+        }
+        html += `</div>`;
+      }
+
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+
+    container.innerHTML = html;
+  }
+
+  function renderError(message) {
+    const container = document.getElementById(CONFIG.containerId);
+    container.innerHTML = `<div class="ap-error">${message}</div>`;
+  }
+
+  // ============================================
+  // INIT
+  // ============================================
+  async function init() {
+    // Check cache first
+    const cached = getCache();
+    if (cached) {
+      render(cached.actor, cached.posts);
+      return;
+    }
+
+    try {
+      const [actor, posts] = await Promise.all([
+        fetchActor(),
+        fetchPosts()
+      ]);
+
+      setCache(actor, posts);
+      render(actor, posts);
+    } catch (error) {
+      console.error('ActivityPub Widget Error:', error);
+      renderError('Failed to load profile. Please try again later.');
+    }
+  }
+
+  // Start
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+</body>
+</html>
