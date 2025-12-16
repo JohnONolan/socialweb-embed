@@ -13,7 +13,7 @@
 
     html, body {
       background: transparent;
-      padding: 4px;
+      padding: 5px;
     }
 
     .ap-widget {
@@ -23,7 +23,7 @@
       background: #fff;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.1);
     }
 
     .ap-cover {
@@ -846,8 +846,8 @@ document.addEventListener('keydown', function(e) {
 
   function postHeight() {
     const widget = document.getElementById(CONFIG.containerId);
-    // Include body padding (4px top + 4px bottom = 8px)
-    const height = widget ? widget.offsetHeight + 8 : document.body.scrollHeight;
+    // Include body padding (5px top + 5px bottom = 10px)
+    const height = widget ? widget.offsetHeight + 10 : document.body.scrollHeight;
     window.parent.postMessage({ type: 'socialweb-embed-height', height: height }, '*');
   }
 
