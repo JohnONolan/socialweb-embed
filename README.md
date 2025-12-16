@@ -2,6 +2,13 @@
 
 Embed a social profile preview of Ghost SocialWeb notes on any site
 
+### Demo
+
+https://codepen.io/JohnONolan/pen/qEZzPvQ?editors=1000
+
+
+### Embed
+
 ```html
 <iframe 
     id="socialweb-embed"
