@@ -13,13 +13,13 @@
 
     html, body {
       background: transparent;
-      padding: 5px;
+      overflow: hidden;
     }
 
     .ap-widget {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
       max-width: 600px;
-      margin: 0 auto;
+      margin: 5px;
       background: #fff;
       border-radius: 16px;
       overflow: hidden;
@@ -845,10 +845,32 @@ document.addEventListener('keydown', function(e) {
   }
 
   function postHeight() {
-    const widget = document.getElementById(CONFIG.containerId);
-    // Include body padding (5px top + 5px bottom = 10px)
-    const height = widget ? widget.offsetHeight + 10 : document.body.scrollHeight;
+    const height = document.documentElement.scrollHeight;
     window.parent.postMessage({ type: 'socialweb-embed-height', height: height }, '*');
+  }
+
+  // Use ResizeObserver for reliable height updates (handles images, fonts, etc.)
+  function setupResizeObserver() {
+    const widget = document.getElementById(CONFIG.containerId);
+    if (!widget) return;
+
+    // Post initial height
+    postHeight();
+
+    // Observe for any size changes
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(() => {
+        postHeight();
+      });
+      observer.observe(widget);
+    }
+
+    // Also post on images loaded
+    widget.querySelectorAll('img').forEach(img => {
+      if (!img.complete) {
+        img.addEventListener('load', postHeight);
+      }
+    });
   }
 
   function render(actor, posts) {
@@ -925,8 +947,8 @@ document.addEventListener('keydown', function(e) {
 
     container.innerHTML = html;
 
-    // Notify parent of height for responsive iframe
-    requestAnimationFrame(postHeight);
+    // Setup resize observer for responsive iframe height
+    requestAnimationFrame(setupResizeObserver);
   }
 
   function renderError(message) {
