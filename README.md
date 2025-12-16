@@ -2,9 +2,12 @@
 
 Embed a social profile preview of Ghost SocialWeb notes on any site
 
+
 ### Demo
 
 https://codepen.io/JohnONolan/pen/qEZzPvQ?editors=1000
+
+<img width="2450" height="1634" alt="CleanShot 2025-12-17 at 03 18 48@2x" src="https://github.com/user-attachments/assets/01e33581-8e82-4a32-8412-0ede42becfad" />
 
 
 ### Embed
@@ -22,6 +25,7 @@ https://codepen.io/JohnONolan/pen/qEZzPvQ?editors=1000
 ></iframe>
 <script>!function(){var e=document.getElementById("socialweb-embed"),d=e.dataset,p=new URLSearchParams({site:d.site||"",color:d.color||"light",twitter:d.twitter||"",bluesky:d.bluesky||""});e.src="https://johnonolan.github.io/socialweb-embed/?"+p;window.addEventListener("message",function(m){m.data&&m.data.type==="socialweb-embed-height"&&(e.style.height=m.data.height+"px")})}();</script>
 ```
+
 
 ### Parameters
 
