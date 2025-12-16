@@ -628,6 +628,7 @@ document.addEventListener('keydown', function(e) {
   const color = params.get('color') || 'light';
   const twitterUrl = params.get('twitter') || '';
   const blueskyUrl = params.get('bluesky') || '';
+  const posts = parseInt(params.get('posts')) || 3;
 
   // ============================================
   // CONFIGURATION
@@ -635,7 +636,7 @@ document.addEventListener('keydown', function(e) {
   const CONFIG = {
     actorUrl: `https://${site}/.ghost/activitypub/users/index`,
     outboxUrl: `https://${site}/.ghost/activitypub/outbox/index`,
-    maxPosts: 5,
+    maxPosts: posts,
     cacheDuration: 5,
     containerId: 'ap-widget',
     site: site,

@@ -16,6 +16,7 @@ https://codepen.io/JohnONolan/pen/qEZzPvQ?editors=1000
 <iframe 
     id="socialweb-embed"
     data-site="blog.alcove.news"
+    data-posts="3"
     data-color="light"
     data-twitter="https://x.com/alcovenews"
     data-bluesky="https://bsky.app/profile/alcove.blog"
@@ -29,7 +30,8 @@ https://codepen.io/JohnONolan/pen/qEZzPvQ?editors=1000
 
 ### Parameters
 
-- **Site** - [your_ghost_url]
-- **Color** light, dark
+- **Site** - [your_ghost_url] (required)
+- **Posts** - How many recent notes to show (default: 3)
+- **Color** light, dark (default: light)
 - **Twitter** - link to your twitter profile (optional)
 - **Bluesky** - link to your bluesky profile (optional)
