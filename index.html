@@ -762,8 +762,8 @@ document.addEventListener('keydown', function(e) {
       // Skip replies
       if (object.inReplyTo) continue;
       
-      // Only Notes and Articles
-      if (object.type !== 'Note' && object.type !== 'Article') continue;
+      // Only Notes (no Articles, no boosts, no replies)
+      if (object.type !== 'Note') continue;
 
       // Extract images
       const images = [];
