@@ -36,6 +36,11 @@ https://codepen.io/JohnONolan/pen/qEZzPvQ?editors=1000
 - **Twitter** - link to your twitter profile (optional)
 - **Bluesky** - link to your bluesky profile (optional)
 
+
+### Customizing & self-hosting
+
+It's just an HTML page that runs on GitHub pages. Fork this repo, deploy main branch to GitHub pages, and modify however you like.
+
 ---
 
 Copyright (c) 2025 John O'Nolan - Released under the [MIT license](LICENSE).
