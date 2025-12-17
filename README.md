@@ -35,3 +35,7 @@ https://codepen.io/JohnONolan/pen/qEZzPvQ?editors=1000
 - **Color** light, dark (default: light)
 - **Twitter** - link to your twitter profile (optional)
 - **Bluesky** - link to your bluesky profile (optional)
+
+---
+
+Copyright (c) 2025 John O'Nolan - Released under the [MIT license](LICENSE).
