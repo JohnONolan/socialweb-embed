@@ -890,6 +890,13 @@ document.addEventListener('keydown', function(e) {
     const avatar = actor.icon?.url || actor.icon || '';
     const cover = actor.image?.url || actor.image || '';
 
+    // Update SocialWeb handle in follow dialog to use preferredUsername
+    const socialwebHandleEl = document.getElementById('socialweb-handle');
+    if (socialwebHandleEl) {
+      socialwebHandleEl.textContent = handle;
+      socialwebHandleEl.dataset.handle = handle;
+    }
+
     let html = '';
 
     // Cover image
