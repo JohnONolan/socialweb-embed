@@ -659,16 +659,52 @@ document.addEventListener('keydown', function(e) {
   if (twitterLink) {
     if (twitterUrl) {
       twitterLink.href = twitterUrl;
+      // Derive handle from URL: https://x.com/username -> @username
+      const twitterHandle = getTwitterHandle(twitterUrl);
+      const twitterHandleEl = twitterLink.querySelector('.ap-dialog-option-handle');
+      if (twitterHandleEl && twitterHandle) {
+        twitterHandleEl.textContent = twitterHandle;
+      }
     } else {
       twitterLink.style.display = 'none';
+    }
+  }
+
+  function getTwitterHandle(url) {
+    try {
+      const match = url.match(/(?:x\.com|twitter\.com)\/([^/?#]+)/);
+      if (!match) return null;
+      return '@' + match[1];
+    } catch {
+      return null;
     }
   }
 
   if (blueskyLink) {
     if (blueskyUrl) {
       blueskyLink.href = blueskyUrl;
+      // Derive handle from URL: https://bsky.app/profile/username -> @username
+      const blueskyHandle = getBlueskyHandle(blueskyUrl);
+      const blueskyHandleEl = blueskyLink.querySelector('.ap-dialog-option-handle');
+      if (blueskyHandleEl && blueskyHandle) {
+        blueskyHandleEl.textContent = blueskyHandle;
+      }
     } else {
       blueskyLink.style.display = 'none';
+    }
+  }
+
+  function getBlueskyHandle(url) {
+    try {
+      const match = url.match(/bsky\.app\/profile\/([^/?#]+)/);
+      if (!match) return null;
+      let handle = match[1];
+      // Trim common suffixes
+      handle = handle.replace(/\.bsky\.social$/, '');
+      handle = handle.replace(/\.ap\.brid\.gy$/, '');
+      return '@' + handle;
+    } catch {
+      return null;
     }
   }
 
