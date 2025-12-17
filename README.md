@@ -1,6 +1,6 @@
 # SocialWeb Embed
 
-Embed a social profile preview of Ghost SocialWeb notes on any site
+Embed a social profile preview of [Ghost](https://github.com/tryghost/ghost) SocialWeb notes on any site
 
 
 ### Demo
